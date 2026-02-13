@@ -66,14 +66,22 @@ if [[ ! -d "${NDK}" ]]; then
 fi
 
 # toolchain base
-TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt/linux-x86_64"
-if [[ ! -d "${TOOLCHAIN}" ]]; then
-  TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt"
-  if [[ ! -d "${TOOLCHAIN}" ]]; then
-    echo "ERROR: NDK toolchain directory not found under ${NDK}"
-    exit 1
-  fi
+#TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt/linux-x86_64"
+#if [[ ! -d "${TOOLCHAIN}" ]]; then
+#  TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt"
+#  if [[ ! -d "${TOOLCHAIN}" ]]; then
+#    echo "ERROR: NDK toolchain directory not found under ${NDK}"
+#    exit 1
+#  fi
+#fi
+OS_NAME="linux-x86_64"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  OS_NAME="darwin-x86_64"
+elif [[ "$OSTYPE" == "cygwin"* ]]; then
+  OS_NAME="windows-x86_64"
 fi
+
+TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt/${OS_NAME}"
 
 build_one() {
   local ABI="$1"
@@ -110,7 +118,7 @@ build_one() {
       CC="${TOOLCHAIN}/bin/i686-linux-android${API}-clang"
       CXX="${TOOLCHAIN}/bin/i686-linux-android${API}-clang++"
       CROSS_PREFIX="${TOOLCHAIN}/bin/i686-linux-android-"
-      EXTRA_CFLAGS="-march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32 -O3"
+      EXTRA_CFLAGS="-march=i686 -mtune=atom -mssse3 -mfpmath=sse -m32 -O3"
       ;;
     x86_64)
       ARCH="x86_64"
@@ -118,7 +126,7 @@ build_one() {
       CC="${TOOLCHAIN}/bin/x86_64-linux-android${API}-clang"
       CXX="${TOOLCHAIN}/bin/x86_64-linux-android${API}-clang++"
       CROSS_PREFIX="${TOOLCHAIN}/bin/x86_64-linux-android-"
-      EXTRA_CFLAGS="-march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel -O3"
+      EXTRA_CFLAGS="-march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=x86-64 -O3"
       EXTRA_LDFLAGS="-Wl,-z,max-page-size=16384"
       ;;
     *)
@@ -208,7 +216,7 @@ build_one() {
     --extra-ldflags="-L${INSTALL_DIR}/lib ${EXTRA_LDFLAGS}"
   )
 
-  if [[ "${ARCH}" == "x86" ]]; then
+  if [[ "${ARCH}" == "x86" || "${ARCH}" == "x86_64"  ]]; then
     CONFIGURE_FLAGS+=(--disable-asm)
   else
     CONFIGURE_FLAGS+=(--enable-asm)

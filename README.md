@@ -17,11 +17,15 @@ To build the project, you need to set up your environment:
     Define your Telegram API credentials in the `local.properties` file located in the root directory:
     ```properties
     TELEGRAM_API_ID=123456
-    TELEGRAM_API_HASH=your_api_hash
+    TELEGRAM_API_HASH="your_api_hash"
     ```
 
 2.  **Google Services**
     Place your `google-services.json` file in the `mategram/mategram` directory.
+	
+3.	**Build third-party dependencies**
+	Run `build_vpx.sh` and `build_ffmpeg.sh` scripts in the `material/jni/src/main/cpp` directory
+	*Note for Windows: you need to use Cygwin/MSYS2 to build it*
 
 
 ## Contacts

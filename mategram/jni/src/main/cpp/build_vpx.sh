@@ -54,6 +54,8 @@ fi
 OS_NAME="linux-x86_64"
 if [[ "$OSTYPE" == "darwin"* ]]; then
   OS_NAME="darwin-x86_64"
+elif [[ "$OSTYPE" == "cygwin"* ]]; then
+  OS_NAME="windows-x86_64"
 fi
 
 TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt/${OS_NAME}"
@@ -63,7 +65,7 @@ build_one() {
   local TARGET=""
   local BUILD_SUBDIR=""
   local EXTRA_CONFIG_FLAGS=""
-  local EXTRA_CFLAGS="-D__ANDROID_API__=${API} -O3 -fPIC"
+  local EXTRA_CFLAGS="-O3 -fPIC"
 
   case "${ABI}" in
     armeabi-v7a)
@@ -108,9 +110,7 @@ build_one() {
   local AS="${CC}"
 
   if [[ "${ABI}" == "x86" || "${ABI}" == "x86_64" ]]; then
-    if command -v yasm >/dev/null 2>&1; then
-      AS="yasm"
-    fi
+    AS="${TOOLCHAIN}/bin/yasm"
   fi
 
   # Fix for InterpKernel and vpx_scale missing symbols
