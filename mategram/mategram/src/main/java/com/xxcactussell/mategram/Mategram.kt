@@ -5,6 +5,7 @@ import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.xxcactussell.data.TdClientManager
+import com.xxcactussell.data.TelegramCredentials
 import com.xxcactussell.jni.NativeStickerCore
 import com.xxcactussell.presentation.localization.LocalizationManager
 import dagger.hilt.android.HiltAndroidApp
@@ -45,6 +46,9 @@ class MategramApplication : Application(), Configuration.Provider {
 
         val path = cacheDir.absolutePath;
         NativeStickerCore.setCacheDir(path);
+
+        tdClientManager.initCred(this@MategramApplication)
+
         CoroutineScope(Dispatchers.Default + SupervisorJob()).launch {
             tdClientManager.initialize(this@MategramApplication)
         }

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="mategram.mategram">
+      <SelectionState runConfigName="Mategram">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

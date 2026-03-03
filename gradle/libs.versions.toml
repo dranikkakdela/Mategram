@@ -1,6 +1,6 @@
 [versions]
 accompanistDrawablepainter = "0.37.3"
-agp = "9.0.0"
+agp = "9.0.1"
 cameraView = "1.6.0-beta01"
 coilCompose = "2.7.0"
 coilGif = "2.7.0"

@@ -55,6 +55,10 @@ class TdClientManagerImpl @Inject constructor() : TdClientManager {
 
     private val tdClientManagerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    override fun initCred(context: Context) {
+        TelegramCredentials.initialize(context)
+    }
+
     override fun initialize(context: Context) {
         if (isInitialized.getAndSet(true)) return
         tdClientManagerScope.launch {
@@ -64,8 +68,6 @@ class TdClientManagerImpl @Inject constructor() : TdClientManager {
                 } catch (e: UnsatisfiedLinkError) {
                     Log.e("TdClientManager", "Failed to load tdjni", e)
                 }
-
-                TelegramCredentials.initialize(context)
 
                 try {
                     Client.execute(TdApi.SetLogVerbosityLevel(0))

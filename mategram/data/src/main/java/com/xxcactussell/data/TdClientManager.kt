@@ -9,6 +9,8 @@ import org.drinkless.tdlib.TdApi
 
 interface TdClientManager {
     fun initialize(context: Context)
+
+    fun initCred(context: Context)
     val client: Client
     val updatesFlow: SharedFlow<TdApi.Object>
     val filesUpdatesFlow: SharedFlow<TdApi.UpdateFile>
