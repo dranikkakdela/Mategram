@@ -18,12 +18,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.sp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.xxcactussell.customdomain.ForwardFullInfo
 import com.xxcactussell.domain.MessageAnimatedEmoji
@@ -242,5 +247,32 @@ fun MessagePhotoContent(
 
 @Composable
 fun MessageTextContent(content: MessageText, textColor: Color = MaterialTheme.colorScheme.onSurface) {
-    FormattedTextView(text = content.text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp, 8.dp), color = textColor)
+    val style = MaterialTheme.typography.bodyMedium
+    val density = LocalDensity.current
+
+    val singleLineThreshold = remember(style, density) {
+        with(density) {
+            val fontSize = if (style.fontSize.isSpecified) style.fontSize else 16.sp
+            val lineHeight = if (style.lineHeight.isSpecified) style.lineHeight else fontSize
+            (lineHeight.toDp() + 2.dp).toPx() * 1.5f
+        }
+    }
+
+    FormattedTextView(
+        text = content.text,
+        style = style,
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                val isSingleLine = placeable.height <= singleLineThreshold
+                val verticalPadding = if (isSingleLine) 8.dp.roundToPx() else 16.dp.roundToPx()
+
+                layout(placeable.width, placeable.height + verticalPadding * 2) {
+                    placeable.place(0, verticalPadding)
+                }
+            },
+        color = textColor,
+        lineOffset = 2.dp
+    )
 }

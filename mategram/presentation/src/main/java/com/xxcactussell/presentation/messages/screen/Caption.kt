@@ -20,7 +20,8 @@ fun Caption(caption: FormattedText?, textColor: Color = MaterialTheme.colorSchem
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .wrapContentWidth(align = Alignment.Start),
-            color = textColor
+            color = textColor,
+            lineOffset = 2.dp
         )
     }
 }
