@@ -1,5 +1,8 @@
 package com.xxcactussell.presentation.auth.screen.view
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -45,6 +48,7 @@ import com.xxcactussell.presentation.tools.NumericKeyboard
 fun AuthInputCodeView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
     val scrollState = rememberScrollState()
     var code by remember { mutableStateOf("") }
+    val isReady = code.length >= 5
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -61,7 +65,9 @@ fun AuthInputCodeView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
                     }
                 },
                 onSendClick = {
-                    onEvent(AuthEvent.SubmitCode(code))
+                    if (isReady) {
+                        onEvent(AuthEvent.SubmitCode(code))
+                    }
                 }
             )
         }
@@ -69,7 +75,7 @@ fun AuthInputCodeView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 24.dp, end = 24.dp)
+                .padding(horizontal = 24.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -83,33 +89,43 @@ fun AuthInputCodeView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
                     painterResource(R.drawable.lock_24px),
                     "Code icon",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(56.dp)
                 )
                 Spacer(Modifier.height(24.dp))
                 Text(
                     localizedString("login_Code"),
                     style = MaterialTheme.typography.displayMediumEmphasized
                 )
+                Spacer(Modifier.height(8.dp))
                 Text(
                     localizedString("SentAppCode"),
                     style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(Modifier.height(24.dp))
-                CodeDisplayField(code)
+                Spacer(Modifier.height(32.dp))
+                CodeDisplayField(
+                    code = code,
+                    isReady = isReady
+                )
+                Spacer(Modifier.height(8.dp))
                 TextButton(
-                    onClick = { /*TODO*/ }
+                    onClick = { onEvent(AuthEvent.ResendCode) }
                 ) {
-                    Text(localizedString("DidNotGetTheCode"), textAlign = TextAlign.Center)
+                    Text(
+                        localizedString("DidNotGetTheCode"),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
     }
+
     if (state.isLoading) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
                 .clickable(enabled = false, onClick = {}, indication = null, interactionSource = null)
         ) {
             LoadingIndicator(modifier = Modifier.align(Alignment.Center))
@@ -121,8 +137,26 @@ fun AuthInputCodeView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
 @Composable
 fun CodeDisplayField(
     code: String,
+    isReady: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val containerColor by animateColorAsState(
+        targetValue = if (isReady)
+            MaterialTheme.colorScheme.tertiaryContainer
+        else
+            MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "codeFieldColor"
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (isReady)
+            MaterialTheme.colorScheme.onTertiaryContainer
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "codeTextColor"
+    )
+
     TextField(
         value = code,
         onValueChange = {},
@@ -135,17 +169,15 @@ fun CodeDisplayField(
             textAlign = TextAlign.Center
         ),
         colors = TextFieldDefaults.colors(
-            focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryContainer,
-            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedTextColor = textColor,
+            unfocusedTextColor = textColor,
+            focusedContainerColor = containerColor,
+            unfocusedContainerColor = containerColor,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
             errorIndicatorColor = Color.Transparent
         ),
-        singleLine = true,
+        singleLine = true
     )
 }
