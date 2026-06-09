@@ -1,5 +1,8 @@
 package com.xxcactussell.presentation.auth.screen.view
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -46,6 +49,7 @@ import com.xxcactussell.presentation.tools.PhoneNumberFormatter
 fun AuthInputPhoneView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
     val scrollState = rememberScrollState()
     var phoneNumber by remember { mutableStateOf("+") }
+    val isValid = PhoneNumberFormatter.isValid(phoneNumber)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -62,7 +66,7 @@ fun AuthInputPhoneView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
                     }
                 },
                 onSendClick = {
-                    if (PhoneNumberFormatter.isValid(phoneNumber)) {
+                    if (isValid) {
                         onEvent(AuthEvent.SubmitPhone(phoneNumber))
                     }
                 }
@@ -72,7 +76,7 @@ fun AuthInputPhoneView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 24.dp, end = 24.dp)
+                .padding(horizontal = 24.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -86,28 +90,35 @@ fun AuthInputPhoneView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
                     painterResource(R.drawable.sim_card_24px),
                     "SIM-card icon",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(56.dp)
                 )
                 Spacer(Modifier.height(24.dp))
                 Text(
                     localizedString("YourPhone"),
                     style = MaterialTheme.typography.displayMediumEmphasized
                 )
+                Spacer(Modifier.height(8.dp))
                 Text(
                     localizedString("PassportPhoneInfo"),
                     style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(Modifier.height(24.dp))
-                PhoneDisplayField(phoneNumber)
+                Spacer(Modifier.height(32.dp))
+                // Цвет поля меняется когда номер валидный
+                PhoneDisplayField(
+                    phoneNumber = phoneNumber,
+                    isValid = isValid
+                )
             }
         }
     }
+
     if (state.isLoading) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
                 .clickable(enabled = false, onClick = {}, indication = null, interactionSource = null)
         ) {
             LoadingIndicator(modifier = Modifier.align(Alignment.Center))
@@ -119,9 +130,28 @@ fun AuthInputPhoneView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
 @Composable
 fun PhoneDisplayField(
     phoneNumber: String,
+    isValid: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val formattedNumber: String = PhoneNumberFormatter.format(phoneNumber) ?: ""
+    val formattedNumber = PhoneNumberFormatter.format(phoneNumber) ?: ""
+
+    // Плавная анимация цвета — зелёный когда валидный номер
+    val containerColor by animateColorAsState(
+        targetValue = if (isValid)
+            MaterialTheme.colorScheme.tertiaryContainer
+        else
+            MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "phoneFieldColor"
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (isValid)
+            MaterialTheme.colorScheme.onTertiaryContainer
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "phoneTextColor"
+    )
 
     TextField(
         value = formattedNumber,
@@ -135,12 +165,10 @@ fun PhoneDisplayField(
             textAlign = TextAlign.Center
         ),
         colors = TextFieldDefaults.colors(
-            focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryContainer,
-            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedTextColor = textColor,
+            unfocusedTextColor = textColor,
+            focusedContainerColor = containerColor,
+            unfocusedContainerColor = containerColor,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
