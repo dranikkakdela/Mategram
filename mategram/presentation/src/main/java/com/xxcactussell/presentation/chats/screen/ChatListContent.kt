@@ -71,7 +71,11 @@ fun ChatListContent(
     onEvent: (ChatsEvent) -> Unit,
     onChatClick: (Long, Long?, Long?) -> Unit,
     onFabClicked: () -> Unit,
-    onAvatarClicked: () -> Unit
+    onAvatarClicked: () -> Unit,
+    onStoriesClicked: () -> Unit = {},
+    onContactsClicked: () -> Unit = {},
+    onSavedMessagesClicked: () -> Unit = {},
+    onCallsClicked: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -126,10 +130,8 @@ fun ChatListContent(
                         )
                     },
                     navigationIcon = {
-                        IconButton(
-                            { },
-
-                            ) {
+                        // Кнопка Stories — теперь работает
+                        IconButton(onClick = onStoriesClicked) {
                             Icon(painterResource(R.drawable.photo_camera_24px), "Stories")
                         }
                     },
@@ -139,11 +141,7 @@ fun ChatListContent(
                                 .padding(12.dp)
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .clickable(
-                                    onClick = {
-                                        onAvatarClicked()
-                                    }
-                                )
+                                .clickable(onClick = onAvatarClicked)
                         ) {
                             ChatAvatar(
                                 modifier = Modifier.fillMaxSize(),
@@ -155,22 +153,25 @@ fun ChatListContent(
                     },
                     scrollBehavior = scrollBehavior,
                     colors = SearchBarDefaults.appBarWithSearchColors(
-                        appBarContainerColor  = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        scrolledAppBarContainerColor  = MaterialTheme.colorScheme.surfaceContainerHighest
+                        appBarContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        scrolledAppBarContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
                 )
-                if(state.allTabs.size > 1) {
+                if (state.allTabs.size > 1) {
                     LazyRow(
                         modifier = Modifier,
                         state = foldersFiltersState,
-                        contentPadding = PaddingValues(WindowInsets.displayCutout.asPaddingValues().calculateStartPadding(LocalLayoutDirection.current) + 12.dp, 0.dp, WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LocalLayoutDirection.current) + 12.dp, 0.dp),
+                        contentPadding = PaddingValues(
+                            start = WindowInsets.displayCutout.asPaddingValues().calculateStartPadding(LocalLayoutDirection.current) + 12.dp,
+                            top = 0.dp,
+                            end = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(LocalLayoutDirection.current) + 12.dp,
+                            bottom = 8.dp
+                        ),
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         itemsIndexed(
                             items = state.allTabs,
-                            key = { _, tab ->
-                                "tab_id_${tab.id}"
-                            }
+                            key = { _, tab -> "tab_id_${tab.id}" }
                         ) { index, tab ->
                             ToggleButton(
                                 checked = state.selectedIndex == index,
@@ -179,31 +180,30 @@ fun ChatListContent(
                                         pagerState.animateScrollToPage(index)
                                         foldersFiltersState.animateScrollToItem(index)
                                     }
-                                    if (it) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                                    } else {
-                                        haptic.performHapticFeedback(HapticFeedbackType.ToggleOff)
-                                    }
+                                    haptic.performHapticFeedback(
+                                        if (it) HapticFeedbackType.ToggleOn
+                                        else HapticFeedbackType.ToggleOff
+                                    )
                                 },
-                                shapes =
-                                    when (index) {
-                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                        state.allTabs.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                                    },
+                                shapes = when (index) {
+                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                    state.allTabs.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                },
                             ) {
-                                FormattedTextView(text = if (tab.title != null) tab.title.text else FormattedText(
-                                    localizedString("FilterAllChats"),
-                                    emptyList()
-                                ), clickable = false)
-                                tab.unreadCount.let {
-                                    if (it > 0) {
-                                        Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
-                                        Badge (
-                                            containerColor = if (tab.isSelected) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.error
-                                        ) {
-                                            Text("${tab.unreadCount}")
-                                        }
+                                FormattedTextView(
+                                    text = tab.title ?: FormattedText(localizedString("FilterAllChats"), emptyList()),
+                                    clickable = false
+                                )
+                                if (tab.unreadCount > 0) {
+                                    Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+                                    Badge(
+                                        containerColor = if (tab.isSelected)
+                                            MaterialTheme.colorScheme.errorContainer
+                                        else
+                                            MaterialTheme.colorScheme.error
+                                    ) {
+                                        Text("${tab.unreadCount}")
                                     }
                                 }
                             }
@@ -226,19 +226,14 @@ fun ChatListContent(
                     }
                 }
             ) {
-                IconButton(
-                    { },
-                ) {
+                // Кнопки тулбара — теперь все работают
+                IconButton(onClick = onContactsClicked) {
                     Icon(painterResource(R.drawable.contacts_24px), "Contacts")
                 }
-                IconButton(
-                    { }
-                ) {
+                IconButton(onClick = onSavedMessagesClicked) {
                     Icon(painterResource(R.drawable.bookmarks_24px), "Saved messages")
                 }
-                IconButton(
-                    { }
-                ) {
+                IconButton(onClick = onCallsClicked) {
                     Icon(painterResource(R.drawable.call_24px), "Phone")
                 }
             }
