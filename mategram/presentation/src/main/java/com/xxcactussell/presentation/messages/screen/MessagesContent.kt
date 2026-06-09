@@ -315,12 +315,12 @@ fun MessagesContent(
                         }
                     },
                     actions = {
-                        IconButton(
-                            onBackHandle,
-                        ) {
-                            Icon(painterResource(R.drawable.more_vert_24px), "Menu")
-                        }
-                    },
+    IconButton(
+        onClick = { /* TODO: открыть меню */ }
+    ) {
+        Icon(painterResource(R.drawable.more_vert_24px), "Menu")
+    }
+},
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                         scrolledContainerColor  = MaterialTheme.colorScheme.surfaceContainerHighest
