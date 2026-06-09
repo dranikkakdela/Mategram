@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.xxcactussell.mategram.presentation.R
@@ -57,17 +58,14 @@ fun AuthWelcomeContent(onSignInClick: () -> Boolean, onSettingsLanguageClick: ()
                 title = {
                     Image(
                         painterResource(id = R.drawable.ic_mategram_logo_circle),
-                        modifier = Modifier.size(40.dp),
+                        modifier = Modifier.size(44.dp),
                         contentDescription = null
                     )
                 }
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Surface(
                     modifier = Modifier
                         .widthIn(max = 600.dp)
@@ -79,114 +77,114 @@ fun AuthWelcomeContent(onSignInClick: () -> Boolean, onSettingsLanguageClick: ()
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 42.dp)
-                            .windowInsetsPadding(
-                                WindowInsets.navigationBars
-                            ),
+                            .windowInsetsPadding(WindowInsets.navigationBars),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val size = ButtonDefaults.MediumContainerHeight
+                        val size = ButtonDefaults.LargeContainerHeight
                         Button(
                             onClick = { onSignInClick() },
-                            modifier = Modifier.heightIn(size),
+                            modifier = Modifier
+                                .heightIn(size)
+                                .widthIn(min = 240.dp),
                             shape = ButtonDefaults.squareShape,
                             contentPadding = ButtonDefaults.contentPaddingFor(size),
                         ) {
-                            Text(localizedString("StartMessaging"), style = ButtonDefaults.textStyleFor(size))
-                        }
-                        TextButton(
-                            { onSettingsLanguageClick() }
-                        ) {
                             Text(
-                                localizedString("LanguageTitle")
+                                localizedString("StartMessaging"),
+                                style = ButtonDefaults.textStyleFor(size),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        TextButton(onClick = { onSettingsLanguageClick() }) {
+                            Text(
+                                localizedString("LanguageTitle"),
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
                 }
             }
-        },
-        content = { paddingValues ->
-            Box(
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+        ) {
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 24.dp, end = 24.dp)
+                    .verticalScroll(scrollState)
+                    .padding(paddingValues),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(paddingValues),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    localizedString("greeting"),
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    localizedString("welcome_message"),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(32.dp))
+                Card(
+                    shape = RoundedCornerShape(48.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Text(
-                        localizedString("greeting"),
-                        style = MaterialTheme.typography.displayMedium
-                    )
-                    Spacer(Modifier.height(24.dp))
-                    Text(
-                        localizedString("welcome_message"),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Spacer(Modifier.height(24.dp))
-                    Card(
-                        shape = RoundedCornerShape(64.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(42.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Image(
-                                    painterResource(id = R.drawable.ic_welcome_jetpack_compose),
-                                    modifier = Modifier.size(48.dp),
-                                    contentDescription = null
-                                )
-                                Spacer(Modifier.width(24.dp))
-                                Text(
-                                    localizedString("welcome_jc"),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                            Spacer(Modifier.height(42.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Image(
-                                    painterResource(id = R.drawable.ic_welcome_kotlin),
-                                    modifier = Modifier.size(48.dp),
-                                    contentDescription = null
-                                )
-                                Spacer(Modifier.width(24.dp))
-                                Text(
-                                    localizedString("welcome_kotlin"),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                            Spacer(Modifier.height(42.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painterResource(id = R.drawable.ic_welcome_material_design),
-                                    modifier = Modifier.size(48.dp),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(Modifier.width(24.dp))
-                                Text(
-                                    localizedString("welcome_md"),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
+                    Column(modifier = Modifier.padding(36.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painterResource(id = R.drawable.ic_welcome_jetpack_compose),
+                                modifier = Modifier.size(48.dp),
+                                contentDescription = null
+                            )
+                            Spacer(Modifier.width(20.dp))
+                            Text(
+                                localizedString("welcome_jc"),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                        Spacer(Modifier.height(32.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painterResource(id = R.drawable.ic_welcome_kotlin),
+                                modifier = Modifier.size(48.dp),
+                                contentDescription = null
+                            )
+                            Spacer(Modifier.width(20.dp))
+                            Text(
+                                localizedString("welcome_kotlin"),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                        Spacer(Modifier.height(32.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painterResource(id = R.drawable.ic_welcome_material_design),
+                                modifier = Modifier.size(48.dp),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.width(20.dp))
+                            Text(
+                                localizedString("welcome_md"),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                         }
                     }
-                    Spacer(Modifier.height(42.dp))
                 }
+                Spacer(Modifier.height(42.dp))
             }
         }
-    )
+    }
 }
