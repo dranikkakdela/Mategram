@@ -1,5 +1,8 @@
 package com.xxcactussell.presentation.auth.screen.view
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +57,7 @@ import com.xxcactussell.presentation.tools.SendButton
 fun AuthInputPasswordView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
     val scrollState = rememberScrollState()
     var password by remember { mutableStateOf("") }
+    val isReady = password.isNotEmpty()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface
@@ -70,19 +74,21 @@ fun AuthInputPasswordView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
                 painterResource(R.drawable.lock_24px),
                 "Password icon",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(56.dp)
             )
             Spacer(Modifier.height(24.dp))
             Text(
                 localizedString("YourPassword"),
-                style = MaterialTheme.typography.displayMedium
+                style = MaterialTheme.typography.displayMediumEmphasized
             )
+            Spacer(Modifier.height(8.dp))
             Text(
                 localizedString("LoginPasswordText"),
                 style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(32.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -90,13 +96,14 @@ fun AuthInputPasswordView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
             ) {
                 PasswordDisplayField(
                     password = password,
+                    isReady = isReady,
                     onPasswordChange = { password = it },
-                    onSend = { { onEvent(AuthEvent.SubmitPassword(password)) } },
+                    onSend = { onEvent(AuthEvent.SubmitPassword(password)) },
                     modifier = Modifier.weight(1f)
                 )
                 SendButton(
-                    { { onEvent(AuthEvent.SubmitPassword(password)) } },
-                    {
+                    onClick = { onEvent(AuthEvent.SubmitPassword(password)) },
+                    content = {
                         Icon(
                             painterResource(R.drawable.start_24px),
                             modifier = Modifier.size(28.dp),
@@ -110,18 +117,24 @@ fun AuthInputPasswordView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
                     isOtherPressed = false,
                 )
             }
+            Spacer(Modifier.height(8.dp))
             TextButton(
-                onClick = { /*TODO*/ }
+                // Забыл пароль — отправляем событие
+                onClick = { onEvent(AuthEvent.ForgotPassword) }
             ) {
-                Text(localizedString("ForgotPassword"), textAlign = TextAlign.Center)
+                Text(
+                    localizedString("ForgotPassword"),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
+
     if (state.isLoading) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
                 .clickable(
                     enabled = false,
                     onClick = {},
@@ -138,18 +151,37 @@ fun AuthInputPasswordView(state: AuthUiState, onEvent: (AuthEvent) -> Unit) {
 @Composable
 fun PasswordDisplayField(
     password: String,
+    isReady: Boolean = false,
     onPasswordChange: (String) -> Unit,
-    onSend: () -> () -> Unit,
+    onSend: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
+
+    // Плавная анимация цвета когда пароль введён
+    val containerColor by animateColorAsState(
+        targetValue = if (isReady)
+            MaterialTheme.colorScheme.tertiaryContainer
+        else
+            MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "passwordFieldColor"
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (isReady)
+            MaterialTheme.colorScheme.onTertiaryContainer
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "passwordTextColor"
+    )
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(80.dp)
             .clip(RoundedCornerShape(40.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(containerColor)
     ) {
         TextField(
             modifier = Modifier
@@ -159,32 +191,38 @@ fun PasswordDisplayField(
             onValueChange = onPasswordChange,
             textStyle = MaterialTheme.typography.displaySmallEmphasized,
             colors = TextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                focusedTextColor = textColor,
+                unfocusedTextColor = textColor,
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
-                unfocusedPlaceholderColor = Color.Transparent,
-                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
                 errorIndicatorColor = Color.Transparent
             ),
             singleLine = true,
-            visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisibility)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
-                onDone = { onSend }
+                onDone = { onSend() }
             ),
             trailingIcon = {
-                val image = if (passwordVisibility) R.drawable.visibility_24px else R.drawable.visibility_off_24px
-                IconButton(
-                    onClick = { passwordVisibility = !passwordVisibility }
-                ) {
-                    Icon(painter = painterResource(image), contentDescription = "Password visibility")
+                val image = if (passwordVisibility)
+                    R.drawable.visibility_24px
+                else
+                    R.drawable.visibility_off_24px
+                IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                    Icon(
+                        painter = painterResource(image),
+                        contentDescription = "Password visibility",
+                        tint = textColor
+                    )
                 }
             }
         )
